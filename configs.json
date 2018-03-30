@@ -1,0 +1,17 @@
+
+{
+   "fcn8": ["-tr_transform hflipNormalize",
+   "-te_transform normalize -o adam -vb 1",
+   "-m FCN8 -b 1 -n 500",
+   "-oo lr:1e-5|weight_decay:0.0005",
+   "-l crossentropy_loss -s Random -e2v 5"],
+
+   "pspnet": ["-tr_transform hflipNormalize",
+   "-te_transform normalize -o adam -vb 1",
+   "-m FCN8 -b 1 -n 500",
+   "-oo lr:1e-5|weight_decay:0.0005",
+   "-l crossentropy_loss -s Random -e2v 5"]
+
+
+}
+
