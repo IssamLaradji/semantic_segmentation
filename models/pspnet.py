@@ -43,7 +43,7 @@ class PSPNet(um.BaseModel):
 
         self.final = nn.Sequential(
             nn.Conv2d(4096, 512, kernel_size=3, padding=1, bias=False),
-            #nn.BatchNorm2d(512, momentum=.95),
+            nn.BatchNorm2d(512, momentum=.95),
             nn.ReLU(inplace=True),
             nn.Dropout(0.1),
             nn.Conv2d(512, n_classes, kernel_size=1)
@@ -55,11 +55,11 @@ class PSPNet(um.BaseModel):
         self.with_aux = True
         um.initialize_weights(self.ppm, self.final)
 
-        # FREEZE BATCH NORMS
-        for m in self.modules():
-            if isinstance(m, nn.BatchNorm2d):
-                m.weight.requires_grad = False
-                m.bias.requires_grad = False
+        # # FREEZE BATCH NORMS
+        # for m in self.modules():
+        #     if isinstance(m, nn.BatchNorm2d):
+        #         m.weight.requires_grad = False
+        #         m.bias.requires_grad = False
 
 
     def forward_aux(self, x, with_aux=False):

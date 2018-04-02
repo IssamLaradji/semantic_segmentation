@@ -35,10 +35,10 @@ class SegNet(um.BaseModel):
         um.initialize_weights(self.dec5, self.dec4, self.dec3, self.dec2, self.dec1)
 
         # FREEZE BATCH NORMS
-        for m in self.modules():
-            if isinstance(m, nn.BatchNorm2d):
-                m.weight.requires_grad = False
-                m.bias.requires_grad = False
+        # for m in self.modules():
+        #     if isinstance(m, nn.BatchNorm2d):
+        #         m.weight.requires_grad = False
+        #         m.bias.requires_grad = False
 
 
     def forward(self, x):

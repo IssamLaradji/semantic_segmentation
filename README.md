@@ -7,5 +7,8 @@ Command for  `fcn8` on `pascal`:
 
 | Model        | PASCAL2012           | Cityscapes  |
 | ------------- |:-------------:| -----:|
-| FCN8      | - | - |
-| PSPNet      | -      |   - |
+| FCN8      | (55/148) 0.661 | - |
+| PSPNet      | (10/65) 0.522|   - |
+| segnet      | (70/84) 0.628|   - |
+| gcn      |(30/110) 0.512      |   - |
+| resfcn      |(85/132) 0.451      |   - |

@@ -40,11 +40,11 @@ class GCN(um.BaseModel):
         um.initialize_weights(self.gcm1, self.gcm2, self.gcm3, self.gcm4, self.brm1, self.brm2, self.brm3,
                            self.brm4, self.brm5, self.brm6, self.brm7, self.brm8, self.brm9)
 
-        # FREEZE BATCH NORMS
-        for m in self.modules():
-            if isinstance(m, nn.BatchNorm2d):
-                m.weight.requires_grad = False
-                m.bias.requires_grad = False
+        # # FREEZE BATCH NORMS
+        # for m in self.modules():
+        #     if isinstance(m, nn.BatchNorm2d):
+        #         m.weight.requires_grad = False
+        #         m.bias.requires_grad = False
 
 
     def forward(self, x):

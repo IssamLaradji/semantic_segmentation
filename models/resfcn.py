@@ -37,10 +37,10 @@ class Resnet50_8s(um.BaseModel):
                                    kernel_size=1)
 
         # FREEZE BATCH NORMS
-        for m in self.modules():
-            if isinstance(m, nn.BatchNorm2d):
-                m.weight.requires_grad = False
-                m.bias.requires_grad = False
+        # for m in self.modules():
+        #     if isinstance(m, nn.BatchNorm2d):
+        #         m.weight.requires_grad = False
+        #         m.bias.requires_grad = False
 
         
         
