@@ -12,67 +12,64 @@ from torch.nn import functional as F
 from torch.autograd import Variable
 import numpy as np
 import utils as ut
+from . import utils_model as um
 
-
-class FCN8(nn.Module):
+class FCN8(um.BaseModel):
     def __init__(self, train_set, pretrained=True):
-        super().__init__()
-
-        n_classes = self.n_classes = train_set.n_classes
-        self.ignore_index = train_set.ignore_index
+        super().__init__(train_set)
 
         # PREDEFINE LAYERS
         self.pool = nn.MaxPool2d(kernel_size=2, stride=2, ceil_mode=True)
         self.relu = nn.ReLU(inplace=True)
       
         # VGG16 PART
-        self.conv1_1 = conv3x3(3, 64, stride=1, padding=100)
-        self.conv1_2 = conv3x3(64, 64)
+        self.conv1_1 = um.conv3x3(3, 64, stride=1, padding=100)
+        self.conv1_2 = um.conv3x3(64, 64)
         
-        self.conv2_1 = conv3x3(64, 128)
-        self.conv2_2 = conv3x3(128, 128)
+        self.conv2_1 = um.conv3x3(64, 128)
+        self.conv2_2 = um.conv3x3(128, 128)
         
-        self.conv3_1 = conv3x3(128, 256)
-        self.conv3_2 = conv3x3(256, 256)
-        self.conv3_3 = conv3x3(256, 256)
+        self.conv3_1 = um.conv3x3(128, 256)
+        self.conv3_2 = um.conv3x3(256, 256)
+        self.conv3_3 = um.conv3x3(256, 256)
 
-        self.conv4_1 = conv3x3(256, 512)
-        self.conv4_2 = conv3x3(512, 512)
-        self.conv4_3 = conv3x3(512, 512)
+        self.conv4_1 = um.conv3x3(256, 512)
+        self.conv4_2 = um.conv3x3(512, 512)
+        self.conv4_3 = um.conv3x3(512, 512)
 
-        self.conv5_1 = conv3x3(512, 512)
-        self.conv5_2 = conv3x3(512, 512)
-        self.conv5_3 = conv3x3(512, 512)
+        self.conv5_1 = um.conv3x3(512, 512)
+        self.conv5_2 = um.conv3x3(512, 512)
+        self.conv5_3 = um.conv3x3(512, 512)
         
         self.fc6 = nn.Conv2d(512, 4096, kernel_size=7, stride=1, padding=0)
         self.dropout = nn.Dropout()
         self.fc7 = nn.Conv2d(4096, 4096, kernel_size=1, stride=1, padding=0)
         
         # SEMANTIC SEGMENTAION PART
-        self.scoring_layer = nn.Conv2d(4096, n_classes, kernel_size=1, 
+        self.scoring_layer = nn.Conv2d(4096, self.n_classes, kernel_size=1, 
                                       stride=1, padding=0)
 
-        self.upscore2 = nn.ConvTranspose2d(n_classes, n_classes, 
+        self.upscore2 = nn.ConvTranspose2d(self.n_classes, self.n_classes, 
                                           kernel_size=4, stride=2, bias=False)
-        self.upscore_pool4 = nn.ConvTranspose2d(n_classes, n_classes,
+        self.upscore_pool4 = nn.ConvTranspose2d(self.n_classes, self.n_classes,
                                          kernel_size=4, stride=2, bias=False)
-        self.upscore8 = nn.ConvTranspose2d(n_classes, n_classes, 
+        self.upscore8 = nn.ConvTranspose2d(self.n_classes, self.n_classes, 
                                     kernel_size=16, stride=8, bias=False)
         
         # Initilize Weights
         self.scoring_layer.weight.data.zero_()
         self.scoring_layer.bias.data.zero_()
         
-        self.score_pool3 = nn.Conv2d(256, n_classes, kernel_size=1)
-        self.score_pool4 = nn.Conv2d(512, n_classes, kernel_size=1)
+        self.score_pool3 = nn.Conv2d(256, self.n_classes, kernel_size=1)
+        self.score_pool4 = nn.Conv2d(512, self.n_classes, kernel_size=1)
         self.score_pool3.weight.data.zero_()
         self.score_pool3.bias.data.zero_()
         self.score_pool4.weight.data.zero_()
         self.score_pool4.bias.data.zero_()
 
-        self.upscore2.weight.data.copy_(get_upsampling_weight(n_classes, n_classes, 4))
-        self.upscore_pool4.weight.data.copy_(get_upsampling_weight(n_classes, n_classes, 4))
-        self.upscore8.weight.data.copy_(get_upsampling_weight(n_classes, n_classes, 16))
+        self.upscore2.weight.data.copy_(um.get_upsampling_weight(self.n_classes, self.n_classes, 4))
+        self.upscore_pool4.weight.data.copy_(um.get_upsampling_weight(self.n_classes, self.n_classes, 4))
+        self.upscore8.weight.data.copy_(um.get_upsampling_weight(self.n_classes, self.n_classes, 16))
 
         # Pretrained layers
         pth_url = 'https://download.pytorch.org/models/vgg16-397923af.pth' # download from model zoo
@@ -150,45 +147,4 @@ class FCN8(nn.Module):
 
         return output[:, :, 31: (31 + h), 31: (31 + w)].contiguous()
 
-    def predict(self, batch, metric="probs"):
-        self.eval()
-       
-        # SINGLE CLASS
-        if metric == "labels":
-            images = Variable(batch["images"].cuda())
-            return self(images).data.max(1)[1]
 
-        elif metric == "probs":
-            images = Variable(batch["images"].cuda())
-            return F.softmax(self(images),dim=1).data
-    
-        else:
-            raise ValueError("%s not here..." % metric)
-
-        
-
-def get_upsampling_weight(in_channels, out_channels, kernel_size):
-    """Make a 2D bilinear kernel suitable for upsampling"""
-    factor = (kernel_size + 1) // 2
-    if kernel_size % 2 == 1:
-        center = factor - 1
-    else:
-        center = factor - 0.5
-    og = np.ogrid[:kernel_size, :kernel_size]
-    filt = (1 - abs(og[0] - center) / factor) * \
-           (1 - abs(og[1] - center) / factor)
-    weight = np.zeros((in_channels, out_channels, kernel_size, kernel_size),
-                      dtype=np.float64)
-    weight[range(in_channels), range(out_channels), :, :] = filt
-    return torch.from_numpy(weight).float()
-
-
-def conv3x3(in_planes, out_planes, stride=1, padding=1):
-    "3x3 convolution with padding"
-    return nn.Conv2d(in_planes, out_planes, kernel_size=(3,3), stride=(stride,stride),
-                     padding=(padding,padding))
-
-def conv1x1(in_planes, out_planes, stride=1):
-    "1x1 convolution with padding"
-    return nn.Conv2d(in_planes, out_planes, kernel_size=1, stride=stride,
-                     padding=0)

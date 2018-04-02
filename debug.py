@@ -30,6 +30,7 @@ def debug(**main_dict):
 
   batch=ut.get_batch(train_set, indices=[3]) 
   model, opt, _ = mu.init_model_and_opt(main_dict)
-
+  import ipdb; ipdb.set_trace()  # breakpoint 2167961a //
+  
   tr.fitBatch(model, batch, loss_name=main_dict["loss_name"], opt=opt)
   vis.images(batch["images"], model.predict(batch, "probs"), denorm=1)

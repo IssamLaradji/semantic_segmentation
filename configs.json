@@ -8,10 +8,26 @@
 
    "pspnet": ["-tr_transform hflipNormalize",
    "-te_transform normalize -o adam -vb 1",
-   "-m FCN8 -b 1 -n 500",
+   "-m PSPNet -b 1 -n 500",
+   "-oo lr:1e-5|weight_decay:0.0005",
+   "-l crossentropy_loss -s Random -e2v 5"],
+
+   "gcn": ["-tr_transform hflipNormalize",
+   "-te_transform normalize -o adam -vb 1",
+   "-m GCN -b 1 -n 500",
+   "-oo lr:1e-5|weight_decay:0.0005",
+   "-l crossentropy_loss -s Random -e2v 5"],
+
+   "resfcn": ["-tr_transform hflipNormalize",
+   "-te_transform normalize -o adam -vb 1",
+   "-m Resnet50_8s -b 1 -n 500",
+   "-oo lr:1e-5|weight_decay:0.0005",
+   "-l crossentropy_loss -s Random -e2v 5"],
+
+   "segnet": ["-tr_transform hflipNormalize",
+   "-te_transform normalize -o adam -vb 1",
+   "-m SegNet -b 1 -n 500",
    "-oo lr:1e-5|weight_decay:0.0005",
    "-l crossentropy_loss -s Random -e2v 5"]
-
-
 }
 

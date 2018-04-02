@@ -95,9 +95,9 @@ def main(path_datasets, path_save,  exp_name,
       # Update history
       history["val"] += [val_dict]
 
-      # Lower is better
+      # Higher is better
       if (history["best_model"] == {} or 
-          history["best_model"][metric_name] >= val_dict[metric_name]):
+          history["best_model"][metric_name] <= val_dict[metric_name]):
 
         history["best_model"] = val_dict
         mu.save_best_model(model, history)

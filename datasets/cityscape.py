@@ -7,7 +7,7 @@ from torch.utils import data
 
 num_classes = 19
 ignore_label = 255
-root = '/media/b3-542/LIBRARY/Datasets/cityscapes'
+
 
 palette = [128, 64, 128, 244, 35, 232, 70, 70, 70, 102, 102, 156, 190, 153, 153, 153, 153, 153, 250, 170, 30,
            220, 220, 0, 107, 142, 35, 152, 251, 152, 70, 130, 180, 220, 20, 60, 255, 0, 0, 0, 0, 142, 0, 0, 70,
@@ -48,8 +48,6 @@ def make_dataset(quality, mode):
             items.append(item)
     return items
 
-
-ROOT = ""
 
 class CityScapes(data.Dataset):
     def __init__(self, quality, mode, joint_transform=None, sliding_crop=None, transform=None, target_transform=None):
