@@ -1,35 +1,37 @@
 Debug
-=====
-Run `python main.py -e fcn8_pascal -m debug -d PascalPoints`
+-----
+You can debug the code by running,
+`python main.py -e fcn8_pascal -m debug -d PascalPoints`
 
-This lets you interact with the model and dataset using the python debugger.
+which lets you interact with the model and dataset using the python debugger.
 
 You can test the model as follows,
 
-# Load the model and optimizer
-model, opt, _ = mu.init_model_and_opt(main_dict)
+```python
+ # Load the model and optimizer
+ model, opt, _ = mu.init_model_and_opt(main_dict)
 
 
-# Load the training and val set
+ # Load the training and val set
 
-train_set, val_set = mu.load_trainval(main_dict)
+ train_set, val_set = mu.load_trainval(main_dict)
 
-# Get a batch from the training set at index 15
-batch = ut.get_batch(train_set, indices=[15])
+ # Get a batch from the training set at index 15
+ batch = ut.get_batch(train_set, indices=[15])
 
-# Use the model to get the segmentaiton and probaility outputs
-model.predict(batch, "blobs")
-model.predict(batch, "probs")
+ # Use the model to get the segmentaiton and probaility outputs
+ model.predict(batch, "blobs")
+ model.predict(batch, "probs")
 
-# Obtain the score
-score = val.valBatch(model, batch, metric_name="mIoU")
+ # Obtain the score
+ score = val.valBatch(model, batch, metric_name="mIoU")
 
-# Train the model on the batch
-tr.fitBatch(model, batch, opt=opt, loss_name="wtp_loss", epochs=50)
+ # Train the model on the batch
+ tr.fitBatch(model, batch, opt=opt, loss_name="wtp_loss", epochs=50)
 
-# Obtain the new score
-score = val.valBatch(model, batch, metric_name="mIoU")
-
+ # Obtain the new score
+ score = val.valBatch(model, batch, metric_name="mIoU")
+```
 
 Test
 ====
