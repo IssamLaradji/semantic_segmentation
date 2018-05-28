@@ -5,6 +5,10 @@ You can debug the code by running,
 
 which lets you interact with the model and dataset using the python debugger.
 
+- `PascalPoints` is a dataset class defined in the datasets folder.
+
+- `fcn8_pascal` is an experiment description defined in `experiments.py`
+
 You can test the model as follows,
 
 ```python
@@ -13,7 +17,6 @@ You can test the model as follows,
 
 
  # Load the training and val set
-
  train_set, val_set = mu.load_trainval(main_dict)
 
  # Get a batch from the training set at index 15
@@ -34,15 +37,13 @@ You can test the model as follows,
 ```
 
 Test
-====
-Run `python main.py -e fcn8_pascal -m test -d PascalPoints`
-
-PascalPoints is a dataset class defined in the datasets folder
-
-fcn8_pascal is an experiment description defined in `experiments.py`
+----
+You can evaluate your model by running the following command,
+`python main.py -e fcn8_pascal -m test -d PascalPoints`
 
 The command above should give you an output like this,
 
+```
 semantic_segmentation: python main.py -e fcn8_pascal -m test -d PascalPoints 
 CUDA: 9.1.85
 Pytroch: 0.4.0
@@ -53,14 +54,17 @@ Validating... 736
 0 - 0/736 - Validating test set - mIoU: 0.412
 0 - 73/736 - Validating test set - mIoU: 0.035
 0 - 146/736 - Validating test set - mIoU: 0.035
-
+```
 
 Train
-=====
+-----
 You can train your model by running the command:
 
 `python main.py -e fcn8_pascal -m train -d PascalPoints -r reset`
 
+which should give you an output that looks like this,
+
+```
  'testTransformer': 'Te_WTP',
  'trainTransformer': 'Tr_WTP',
  'val_batchsize': 1,
@@ -74,7 +78,7 @@ TRAINING FROM SCRATCH EPOCH: 0/1000
 Training Epoch 1 .... 8498 batches
 1 - (0/8498) - train - mIoU: 0.078 - wtp_loss: 10.061 - elapsed: 0.008
 
-
+```
 
 
 
