@@ -1,4 +1,4 @@
-1. Debugging
+(1) Debugging
 ------------
 You can debug the code by running,
 `python main.py -e fcn8_pascal -m debug -d PascalPoints`
@@ -36,7 +36,7 @@ You can test the model as follows,
  score = val.valBatch(model, batch, metric_name="mIoU")
 ```
 
-2. Testing
+(2) Testing
 ----------
 You can evaluate your model by running the following command,
 `python main.py -e fcn8_pascal -m test -d PascalPoints`
@@ -56,7 +56,7 @@ Validating... 736
 0 - 146/736 - Validating test set - mIoU: 0.035
 ```
 
-3. Training
+(3) Training
 -----------
 You can train your model by running the command:
 
