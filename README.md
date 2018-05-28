@@ -1,7 +1,9 @@
 (1) Debugging
 ------------
 You can debug the code by running,
-`python main.py -e fcn8_pascal -m debug -d PascalPoints`
+```
+python main.py -e fcn8_pascal -m debug -d PascalPoints
+```
 
 which lets you interact with the model and dataset using the python debugger.
 
@@ -39,7 +41,9 @@ You can test the model as follows,
 (2) Testing
 ----------
 You can evaluate your model by running the following command,
-`python main.py -e fcn8_pascal -m test -d PascalPoints`
+```
+python main.py -e fcn8_pascal -m test -d PascalPoints
+```
 
 The command above should give you an output like this,
 
@@ -60,7 +64,9 @@ Validating... 736
 -----------
 You can train your model by running the command:
 
-`python main.py -e fcn8_pascal -m train -d PascalPoints -r reset`
+```
+python main.py -e fcn8_pascal -m train -d PascalPoints -r reset
+```
 
 which should give you an output that looks like this,
 
