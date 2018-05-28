@@ -1,14 +1,80 @@
+Debug
+=====
+Run `python main.py -e fcn8_pascal -m debug -d PascalPoints`
 
-Command for  `fcn8` on `pascal`:
---------------------------------
+This lets you interact with the model and dataset using the python debugger.
 
-`python main.py -mode train -d Pascal2012 -c fcn8 -r None -n 1000 -me mIoU`
+You can test the model as follows,
+
+# Load the model and optimizer
+model, opt, _ = mu.init_model_and_opt(main_dict)
 
 
-| Model        | PASCAL2012           | Cityscapes  |
-| ------------- |:-------------:| -----:|
-| FCN8      | (55/148) 0.661 | - |
-| PSPNet      | (10/65) 0.522|   - |
-| segnet      | (70/84) 0.628|   - |
-| gcn      |(30/110) 0.512      |   - |
-| resfcn      |(85/132) 0.451      |   - |
+# Load the training and val set
+
+train_set, val_set = mu.load_trainval(main_dict)
+
+# Get a batch from the training set at index 15
+batch = ut.get_batch(train_set, indices=[15])
+
+# Use the model to get the segmentaiton and probaility outputs
+model.predict(batch, "blobs")
+model.predict(batch, "probs")
+
+# Obtain the score
+score = val.valBatch(model, batch, metric_name="mIoU")
+
+# Train the model on the batch
+tr.fitBatch(model, batch, opt=opt, loss_name="wtp_loss", epochs=50)
+
+# Obtain the new score
+score = val.valBatch(model, batch, metric_name="mIoU")
+
+
+Test
+====
+Run `python main.py -e fcn8_pascal -m test -d PascalPoints`
+
+PascalPoints is a dataset class defined in the datasets folder
+
+fcn8_pascal is an experiment description defined in `experiments.py`
+
+The command above should give you an output like this,
+
+semantic_segmentation: python main.py -e fcn8_pascal -m test -d PascalPoints 
+CUDA: 9.1.85
+Pytroch: 0.4.0
+PascalPoints
+PascalPoints - fcn8 - wtp_loss
+loaded best model...
+Validating... 736
+0 - 0/736 - Validating test set - mIoU: 0.412
+0 - 73/736 - Validating test set - mIoU: 0.035
+0 - 146/736 - Validating test set - mIoU: 0.035
+
+
+Train
+=====
+You can train your model by running the command:
+
+`python main.py -e fcn8_pascal -m train -d PascalPoints -r reset`
+
+ 'testTransformer': 'Te_WTP',
+ 'trainTransformer': 'Tr_WTP',
+ 'val_batchsize': 1,
+ 'verbose': 1}
+
+EXP: fcn8_dataset:PascalPoints_metric:mIoU_loss:wtp_loss,  Reset: reset
+-----------------------------------------------------------------------
+        dataset  n_train  n_val
+0  PascalPoints     8498    736
+TRAINING FROM SCRATCH EPOCH: 0/1000
+Training Epoch 1 .... 8498 batches
+1 - (0/8498) - train - mIoU: 0.078 - wtp_loss: 10.061 - elapsed: 0.008
+
+
+
+
+
+
+

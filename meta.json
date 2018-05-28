@@ -1,6 +1,6 @@
 {
   "path_datasets":"/mnt/datasets/public/issam/",
-  "path_saves":"/mnt/home/issam/Saves/semantic/",
-  "project":"semantic"
+  "path_saves":"/mnt/home/issam/Saves/semantic_segmentation/",
+  "project":"semantic_segmentation"
 
 }

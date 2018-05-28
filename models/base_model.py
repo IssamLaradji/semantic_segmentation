@@ -4,27 +4,95 @@ import torch.nn.functional as F
 from functools import partial
 from torch.autograd import Variable
 import numpy as np 
+import utils_misc as ut
+from skimage import morphology as morph
 
 class BaseModel(nn.Module):
     def __init__(self, train_set):
         super().__init__()
-        self.n_classes = train_set.n_classes
-        self.ignore_index = train_set.ignore_index
-
-    def predict(self, batch, metric="probs"):
-        self.eval()
-       
-        # SINGLE CLASS
-        if metric == "labels":
-            images = Variable(batch["images"].cuda())
-            return self(images).data.max(1)[1]
-
-        elif metric == "probs":
-            images = Variable(batch["images"].cuda())
-            return F.softmax(self(images),dim=1).data
-
+        if hasattr(train_set, "n_classes"):
+            self.n_classes = train_set.n_classes
         else:
-            raise ValueError("%s not here..." % metric)
+            self.n_classes = train_set["n_classes"]
+        
+        if hasattr(train_set, "ignore_index"):
+            self.ignore_index = train_set.ignore_index
+        else:
+            self.ignore_index = -100
+
+        self.blob_mode = None
+
+
+
+    def get_blobs(self, p_labels, return_counts=False):
+        p_labels = ut.t2n(p_labels)
+        n,h,w = p_labels.shape
+        
+        blobs = np.zeros((n, self.n_classes-1, h, w))
+        counts = np.zeros((n, self.n_classes-1))
+        
+        # Binary case
+        for i in range(n):
+            for l in np.unique(p_labels[i]):
+                if l == 0:
+                    continue
+                
+                blobs[i,l-1] = morph.label(p_labels==l)
+                counts[i, l-1] = (np.unique(blobs[i,l-1]) != 0).sum()
+
+        blobs = blobs.astype(int)
+
+        if return_counts:
+            return blobs, counts
+
+        return blobs
+
+    def predict(self, batch, metric="probs", label=None):
+        with torch.no_grad():
+            self.eval()
+            
+            # SINGLE CLASS
+
+            if metric == "labels":
+                images = Variable(batch["images"].cuda())
+                return self(images).data.max(1)[1]
+
+
+            elif metric == "counts":
+                labels = self.predict(batch, "labels")
+                _, counts = self.get_blobs(labels, return_counts=True)
+
+                return counts
+
+            elif metric == "probs":
+                images = Variable(batch["images"].cuda())
+                return F.softmax(self(images),dim=1).data
+
+                
+            elif metric in ["blobs", "blobs_counts"]: 
+                labels = self.predict(batch, "labels")
+
+                if metric == "blobs":
+                    blobs = self.get_blobs(labels)
+                else:
+                    blobs, counts = self.get_blobs(labels, return_counts=True)
+
+                if self.blob_mode == "superpixels":
+                    blobs = exps.get_superpixels(batch["images"], blobs)
+                if metric == "blobs":
+                    return blobs
+                else:
+                    return  blobs, counts
+
+
+            elif metric == "blobs_counts":
+                blobs, counts = self.get_blobs(self.predict(batch, "labels"), return_counts=True)
+
+                return blobs, counts
+
+
+            else:
+                raise ValueError("%s not here..." % metric)
 
             
 
@@ -67,66 +135,17 @@ class _BoundaryRefineModule(nn.Module):
         out = x + residual
         return out
 
-        
-class _PyramidPoolingModule(nn.Module):
-    def __init__(self, in_dim, reduction_dim, setting):
-        super(_PyramidPoolingModule, self).__init__()
-        self.features = []
-        for s in setting:
-            self.features.append(nn.Sequential(
-                nn.AdaptiveAvgPool2d(s),
-                nn.Conv2d(in_dim, reduction_dim, kernel_size=1, bias=False),
-                nn.BatchNorm2d(reduction_dim, momentum=.95),
-                nn.ReLU(inplace=True)
-            ))
-        self.features = nn.ModuleList(self.features)
-
-    def forward(self, x):
-        x_size = x.size()
-        out = [x]
-
-        for f in self.features:
-            out.append(F.upsample(f(x), x_size[2:], mode='bilinear'))
-        out = torch.cat(out, 1)
-
-        return out
 
 def initialize_weights(*models):
     for model in models:
         for module in model.modules():
             if isinstance(module, nn.Conv2d) or isinstance(module, nn.Linear):
-                nn.init.kaiming_normal(module.weight)
+                nn.init.kaiming_normal_(module.weight)
                 if module.bias is not None:
                     module.bias.data.zero_()
             elif isinstance(module, nn.BatchNorm2d):
                 module.weight.data.fill_(1)
                 module.bias.data.zero_()
-
-
-class _DecoderBlock(nn.Module):
-    def __init__(self, in_channels, out_channels, num_conv_layers):
-        super(_DecoderBlock, self).__init__()
-        middle_channels = in_channels // 2
-        layers = [
-            nn.ConvTranspose2d(in_channels, in_channels, kernel_size=2, stride=2),
-            nn.Conv2d(in_channels, middle_channels, kernel_size=3, padding=1),
-            nn.BatchNorm2d(middle_channels),
-            nn.ReLU(inplace=True)
-        ]
-        layers += [
-                      nn.Conv2d(middle_channels, middle_channels, kernel_size=3, padding=1),
-                      nn.BatchNorm2d(middle_channels),
-                      nn.ReLU(inplace=True),
-                  ] * (num_conv_layers - 2)
-        layers += [
-            nn.Conv2d(middle_channels, out_channels, kernel_size=3, padding=1),
-            nn.BatchNorm2d(out_channels),
-            nn.ReLU(inplace=True),
-        ]
-        self.decode = nn.Sequential(*layers)
-
-    def forward(self, x):
-        return self.decode(x)
 
 
 

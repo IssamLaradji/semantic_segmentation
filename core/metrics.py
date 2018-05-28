@@ -1,8 +1,6 @@
 from sklearn.metrics import confusion_matrix
-import utils as ut 
-import visualize as vis
+import utils_misc as ut 
 import numpy as np
-
 
 
 class mIoU:
@@ -43,3 +41,4 @@ class mIoU:
 
     def get_running_average(self):
         return self._average(self.cf) 
+

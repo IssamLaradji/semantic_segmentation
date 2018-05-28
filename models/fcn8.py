@@ -11,10 +11,9 @@ import torch
 from torch.nn import functional as F
 from torch.autograd import Variable
 import numpy as np
-import utils as ut
-from . import utils_model as um
+from . import base_model as bm
 
-class FCN8(um.BaseModel):
+class FCN8(bm.BaseModel):
     def __init__(self, train_set, pretrained=True):
         super().__init__(train_set)
 
@@ -23,23 +22,23 @@ class FCN8(um.BaseModel):
         self.relu = nn.ReLU(inplace=True)
       
         # VGG16 PART
-        self.conv1_1 = um.conv3x3(3, 64, stride=1, padding=100)
-        self.conv1_2 = um.conv3x3(64, 64)
+        self.conv1_1 = bm.conv3x3(3, 64, stride=1, padding=100)
+        self.conv1_2 = bm.conv3x3(64, 64)
         
-        self.conv2_1 = um.conv3x3(64, 128)
-        self.conv2_2 = um.conv3x3(128, 128)
+        self.conv2_1 = bm.conv3x3(64, 128)
+        self.conv2_2 = bm.conv3x3(128, 128)
         
-        self.conv3_1 = um.conv3x3(128, 256)
-        self.conv3_2 = um.conv3x3(256, 256)
-        self.conv3_3 = um.conv3x3(256, 256)
+        self.conv3_1 = bm.conv3x3(128, 256)
+        self.conv3_2 = bm.conv3x3(256, 256)
+        self.conv3_3 = bm.conv3x3(256, 256)
 
-        self.conv4_1 = um.conv3x3(256, 512)
-        self.conv4_2 = um.conv3x3(512, 512)
-        self.conv4_3 = um.conv3x3(512, 512)
+        self.conv4_1 = bm.conv3x3(256, 512)
+        self.conv4_2 = bm.conv3x3(512, 512)
+        self.conv4_3 = bm.conv3x3(512, 512)
 
-        self.conv5_1 = um.conv3x3(512, 512)
-        self.conv5_2 = um.conv3x3(512, 512)
-        self.conv5_3 = um.conv3x3(512, 512)
+        self.conv5_1 = bm.conv3x3(512, 512)
+        self.conv5_2 = bm.conv3x3(512, 512)
+        self.conv5_3 = bm.conv3x3(512, 512)
         
         self.fc6 = nn.Conv2d(512, 4096, kernel_size=7, stride=1, padding=0)
         self.dropout = nn.Dropout()
@@ -67,9 +66,9 @@ class FCN8(um.BaseModel):
         self.score_pool4.weight.data.zero_()
         self.score_pool4.bias.data.zero_()
 
-        self.upscore2.weight.data.copy_(um.get_upsampling_weight(self.n_classes, self.n_classes, 4))
-        self.upscore_pool4.weight.data.copy_(um.get_upsampling_weight(self.n_classes, self.n_classes, 4))
-        self.upscore8.weight.data.copy_(um.get_upsampling_weight(self.n_classes, self.n_classes, 16))
+        self.upscore2.weight.data.copy_(bm.get_upsampling_weight(self.n_classes, self.n_classes, 4))
+        self.upscore_pool4.weight.data.copy_(bm.get_upsampling_weight(self.n_classes, self.n_classes, 4))
+        self.upscore8.weight.data.copy_(bm.get_upsampling_weight(self.n_classes, self.n_classes, 16))
 
         # Pretrained layers
         pth_url = 'https://download.pytorch.org/models/vgg16-397923af.pth' # download from model zoo

@@ -14,32 +14,33 @@ from torchvision import transforms
 from importlib import reload
 from skimage.segmentation import mark_boundaries
 from torch.utils import data
-import utils as ut
-import joint_transforms as jt
+import utils_misc as ut
+from misc import joint_transforms as jt
 import random
 import numbers
 import collections
 import numpy as np
 from PIL import Image, ImageOps
-
 import torch
-
+mean_std = ([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
 def create_transformer(name=""):
-    if name == "normalize":
+    if name == "Te_WTP":
        return jt.ComposeJoint(
                     [
-                         [transforms.ToTensor(), None],
-                         [transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225)), None],
-                         [None, transforms.Lambda(lambda x: torch.from_numpy(np.asarray(x)).long()) ]
+                         [transforms.ToTensor(), None, None],
+                         [transforms.Normalize(*mean_std), None, None],
+                         [None, jt.ToLong(), jt.ToLong()]
                     ])
 
-    elif name == "hflipNormalize":
+
+    elif name == "Tr_WTP":
        return jt.ComposeJoint(
                     [jt.RandomHorizontalFlipJoint(),            
-                    [transforms.ToTensor(), None],
-                    [transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225)), None],
-                    [None, transforms.Lambda(lambda x: torch.from_numpy(np.asarray(x)).long()) ]
+                    [transforms.ToTensor(), None, None],
+                    [transforms.Normalize(*mean_std), None, None],
+                    [None, jt.ToLong(), jt.ToLong()]
                     ])
+
 
     else:
         raise ValueError("nope")

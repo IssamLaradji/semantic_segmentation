@@ -10,7 +10,7 @@ import scipy.misc
 import sys
 import os
 import os.path as osp
-import datetime
+import datetime                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
 import random
 import timeit, tqdm
 import pandas as pd 
@@ -19,38 +19,38 @@ start = timeit.default_timer()
 import datetime as dt
 import time
 import utils_main as mu
-import utils as ut
+import utils_misc as ut
 import trainers as tr
 import validate as val
 
 
-def main(path_datasets, path_save,  exp_name,
-         dataset_name, model_name, 
-         opt_name, reset, loss_name,
-         epoch2val, verbose, batch_size,
-         iter2val, epochs, trainTransformer, 
-         testTransformer, metric_name, opt_options,
-         dataset_options, model_options,
-         sampler_name, val_batchsize,
-         **extras):
-
-  main_dict = locals().copy()
-  
+def main(main_dict):
   mu.print_welcome(main_dict)
 
   # SET SEED
   np.random.seed(1)
-  torch.manual_seed(1)
+  torch.manual_seed(1) 
   torch.cuda.manual_seed_all(1)
+
+  # EXTRACT VARIABLES
+  reset =  main_dict["reset"]
+  epochs =  main_dict["epochs"]
+  batch_size = main_dict["batch_size"]
+  sampler_name = main_dict["sampler_name"]
+  verbose = main_dict["verbose"]
+  loss_name = main_dict["loss_name"]
+  metric_name = main_dict["metric_name"]
+  epoch2val = main_dict["epoch2val"]
+  val_batchsize = main_dict["val_batchsize"]
 
   # Dataset  
   train_set, val_set = mu.load_trainval(main_dict)
-  
+  train_set[0]
   # Model  
   if reset == "reset":
     model, opt, history = mu.init_model_and_opt(main_dict, 
                                                 train_set) 
-    print("TRAINING FROM SCRATCH EOPCH: %d/%d" % (history["epoch"],
+    print("TRAINING FROM SCRATCH EPOCH: %d/%d" % (history["epoch"],
                                                   epochs))
   else:
     model, opt, history = mu.load_latest_model_and_opt(main_dict, 
@@ -97,7 +97,7 @@ def main(path_datasets, path_save,  exp_name,
 
       # Higher is better
       if (history["best_model"] == {} or 
-          history["best_model"][metric_name] <= val_dict[metric_name]):
+          history["best_model"][metric_name] >= val_dict[metric_name]):
 
         history["best_model"] = val_dict
         mu.save_best_model(model, history)
